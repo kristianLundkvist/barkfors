@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Backend.Models;
+using Backend.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +22,19 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var vehicleContext = services.GetRequiredService<VehicleContext>();
+    vehicleContext.Database.Migrate();
+    //Only seed the database if in development, mocked data have no place in production.
+    if (app.Environment.IsDevelopment())
+    {
+        DbInitializer.Seed(vehicleContext);
+    }
 }
 
 app.UseHttpsRedirection();

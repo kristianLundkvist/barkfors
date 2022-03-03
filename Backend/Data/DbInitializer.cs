@@ -99,6 +99,20 @@ namespace Backend.Data
                 context.Entry(color).State = EntityState.Modified;
                 color.VIN.Add(temp);
 
+                var equipment = context.Equipment.First(e => e.Equipment == "Dashcam");
+                context.EquipmentLists.Add(new EquipmentList
+                {
+                    VIN = temp.VIN,
+                    EquipmentID = equipment.ID,
+                });
+
+                equipment = context.Equipment.First(e => e.Equipment == "GPS");
+                context.EquipmentLists.Add(new EquipmentList
+                {
+                    VIN = temp.VIN,
+                    EquipmentID = equipment.ID,
+                });
+
                 context.SaveChanges();
 
                 temp = new Vehicle
@@ -121,6 +135,13 @@ namespace Backend.Data
                 color = context.Colors.First(c => c.ColorName == "Red");
                 context.Entry(color).State = EntityState.Modified;
                 color.VIN.Add(temp);
+
+                equipment = context.Equipment.First(e => e.Equipment == "Dashcam");
+                context.EquipmentLists.Add(new EquipmentList
+                {
+                    VIN = temp.VIN,
+                    EquipmentID = equipment.ID,
+                });
 
                 context.SaveChanges();
             }

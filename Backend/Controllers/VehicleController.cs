@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
+using SharedDO;
 
 namespace Backend.Controllers
 {
@@ -23,14 +24,26 @@ namespace Backend.Controllers
 
         // GET: api/Vehicle
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Vehicle>>> GetVehicles()
+        public async Task<ActionResult<IEnumerable<VehicleDO>>> GetVehicles()
         {
-            return await _context.Vehicles.ToListAsync();
+            var vehicles = new List<VehicleDO>();
+            foreach (var v in await _context.Vehicles.ToListAsync())
+            {
+
+                VehicleDO temp = new VehicleDO
+                {
+                    VIN = v.VIN,
+                    LicensePlate = v.LicensePlate,
+                    Model = v.Model,
+                };
+                vehicles.Add(ApplyOptionals(temp));
+            }
+            return vehicles;
         }
 
         // GET: api/Vehicle/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Vehicle>> GetVehicle(string id)
+        public async Task<ActionResult<VehicleDO>> GetVehicle(string id)
         {
             var vehicle = await _context.Vehicles.FindAsync(id);
 
@@ -39,20 +52,36 @@ namespace Backend.Controllers
                 return NotFound();
             }
 
-            return vehicle;
+            var DO = new VehicleDO
+            {
+                VIN = vehicle.VIN,
+                LicensePlate = vehicle.LicensePlate,
+                Model = vehicle.Model,
+            };
+            DO = ApplyOptionals(DO);
+
+            return DO;
         }
 
         // PUT: api/Vehicle/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutVehicle(string id, Vehicle vehicle)
+        public async Task<IActionResult> PutVehicle(string id, VehicleDO vehicle)
         {
             if (id != vehicle.VIN)
             {
                 return BadRequest();
             }
 
-            _context.Entry(vehicle).State = EntityState.Modified;
+            var vehicleEntity = _context.Vehicles.Find(id);
+            if (vehicleEntity == null)
+            {
+                return NotFound();
+            }
+
+            _context.Entry(vehicleEntity).State = EntityState.Modified;
+            vehicleEntity.LicensePlate = vehicle.LicensePlate;
+            vehicleEntity.Model = vehicle.Model;
 
             try
             {
@@ -60,14 +89,7 @@ namespace Backend.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!VehicleExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
             return NoContent();
@@ -117,6 +139,43 @@ namespace Backend.Controllers
         private bool VehicleExists(string id)
         {
             return _context.Vehicles.Any(e => e.VIN == id);
+        }
+
+        private VehicleDO ApplyOptionals(VehicleDO vehicle)
+        {
+            foreach (var b in _context.BrandSet.ToList())
+            {
+                if (b.VIN.Exists(bv => bv.VIN == vehicle.VIN))
+                {
+                    vehicle.Brand = new BrandDO { Brand = b.BrandName };
+                }
+            }
+
+            foreach (var f in _context.FuelTypes.ToList())
+            {
+                if (f.VIN.Exists(fv => fv.VIN == vehicle.VIN))
+                {
+                    vehicle.Fuel = new FuelDO { Fuel = f.Type };
+                }
+            }
+
+            foreach (var c in _context.Colors.ToList())
+            {
+                if (c.VIN.Exists(cv => cv.VIN == vehicle.VIN))
+                {
+                    vehicle.Color = new ColorDO { Color = c.ColorName };
+                }
+            }
+
+            foreach (var el in _context.EquipmentLists.Where(el => el.VIN == vehicle.VIN).ToList())
+            {
+                vehicle.Equipment.Add(new VehicleEquipmentDO
+                {
+                    VehicleEquipment = _context.Equipment.Find(el.EquipmentID).Equipment,
+                });
+            }
+
+            return vehicle;
         }
     }
 }

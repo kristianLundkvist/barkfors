@@ -34,11 +34,27 @@ namespace Backend.Migrations
                 name: "Equipment",
                 columns: table => new
                 {
-                    Equipment = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    ID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Equipment = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Equipment", x => x.Equipment);
+                    table.PrimaryKey("PK_Equipment", x => x.ID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EquipmentLists",
+                columns: table => new
+                {
+                    ID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    VIN = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EquipmentID = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EquipmentLists", x => x.ID);
                 });
 
             migrationBuilder.CreateTable(
@@ -61,8 +77,7 @@ namespace Backend.Migrations
                     Model = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BrandName = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CarColorColorName = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    FuelTypeType = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    VehicleEquipmentEquipment = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    FuelTypeType = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -77,11 +92,6 @@ namespace Backend.Migrations
                         column: x => x.CarColorColorName,
                         principalTable: "Colors",
                         principalColumn: "ColorName");
-                    table.ForeignKey(
-                        name: "FK_Vehicles_Equipment_VehicleEquipmentEquipment",
-                        column: x => x.VehicleEquipmentEquipment,
-                        principalTable: "Equipment",
-                        principalColumn: "Equipment");
                     table.ForeignKey(
                         name: "FK_Vehicles_FuelTypes_FuelTypeType",
                         column: x => x.FuelTypeType,
@@ -103,15 +113,16 @@ namespace Backend.Migrations
                 name: "IX_Vehicles_FuelTypeType",
                 table: "Vehicles",
                 column: "FuelTypeType");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Vehicles_VehicleEquipmentEquipment",
-                table: "Vehicles",
-                column: "VehicleEquipmentEquipment");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Equipment");
+
+            migrationBuilder.DropTable(
+                name: "EquipmentLists");
+
             migrationBuilder.DropTable(
                 name: "Vehicles");
 
@@ -120,9 +131,6 @@ namespace Backend.Migrations
 
             migrationBuilder.DropTable(
                 name: "Colors");
-
-            migrationBuilder.DropTable(
-                name: "Equipment");
 
             migrationBuilder.DropTable(
                 name: "FuelTypes");

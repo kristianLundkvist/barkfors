@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(VehicleContext))]
-    [Migration("20220302193442_ResetDatabase")]
+    [Migration("20220303150043_ResetDatabase")]
     partial class ResetDatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,6 +41,26 @@ namespace Backend.Migrations
                     b.HasKey("ColorName");
 
                     b.ToTable("Colors");
+                });
+
+            modelBuilder.Entity("Backend.Models.EquipmentList", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+
+                    b.Property<int>("EquipmentID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VIN")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("EquipmentLists");
                 });
 
             modelBuilder.Entity("Backend.Models.FuelType", b =>
@@ -73,9 +93,6 @@ namespace Backend.Migrations
                     b.Property<string>("Model")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("VehicleEquipmentEquipment")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("VIN");
 
                     b.HasIndex("BrandName");
@@ -84,17 +101,22 @@ namespace Backend.Migrations
 
                     b.HasIndex("FuelTypeType");
 
-                    b.HasIndex("VehicleEquipmentEquipment");
-
                     b.ToTable("Vehicles");
                 });
 
             modelBuilder.Entity("Backend.Models.VehicleEquipment", b =>
                 {
-                    b.Property<string>("Equipment")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.HasKey("Equipment");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+
+                    b.Property<string>("Equipment")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ID");
 
                     b.ToTable("Equipment");
                 });
@@ -112,10 +134,6 @@ namespace Backend.Migrations
                     b.HasOne("Backend.Models.FuelType", null)
                         .WithMany("VIN")
                         .HasForeignKey("FuelTypeType");
-
-                    b.HasOne("Backend.Models.VehicleEquipment", null)
-                        .WithMany("VIN")
-                        .HasForeignKey("VehicleEquipmentEquipment");
                 });
 
             modelBuilder.Entity("Backend.Models.Brand", b =>
@@ -129,11 +147,6 @@ namespace Backend.Migrations
                 });
 
             modelBuilder.Entity("Backend.Models.FuelType", b =>
-                {
-                    b.Navigation("VIN");
-                });
-
-            modelBuilder.Entity("Backend.Models.VehicleEquipment", b =>
                 {
                     b.Navigation("VIN");
                 });

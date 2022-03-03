@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
+using SharedDO;
 
 namespace Backend.Controllers
 {
@@ -23,14 +24,22 @@ namespace Backend.Controllers
 
         // GET: api/Color
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CarColor>>> GetColors()
+        public async Task<ActionResult<IEnumerable<ColorDO>>> GetColors()
         {
-            return await _context.Colors.ToListAsync();
+            var colors = new List<ColorDO>();
+            foreach (var c in await _context.Colors.ToListAsync())
+            {
+                colors.Add(new ColorDO
+                {
+                    Color = c.ColorName,
+                });
+            }
+            return colors;
         }
 
         // GET: api/Color/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<CarColor>> GetCarColor(string id)
+        public async Task<ActionResult<ColorDO>> GetCarColor(string id)
         {
             var carColor = await _context.Colors.FindAsync(id);
 
@@ -39,7 +48,7 @@ namespace Backend.Controllers
                 return NotFound();
             }
 
-            return carColor;
+            return new ColorDO { Color = carColor.ColorName };
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
+using SharedDO;
 
 namespace Backend.Controllers
 {
@@ -23,14 +24,19 @@ namespace Backend.Controllers
 
         // GET: api/FuelType
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<FuelType>>> GetFuelTypes()
+        public async Task<ActionResult<IEnumerable<FuelDO>>> GetFuelTypes()
         {
-            return await _context.FuelTypes.ToListAsync();
+            var fuels = new List<FuelDO>();
+            foreach (var f in await _context.FuelTypes.ToListAsync())
+            {
+                fuels.Add(new FuelDO { Fuel = f.Type });
+            }
+            return fuels;
         }
 
         // GET: api/FuelType/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<FuelType>> GetFuelType(int id)
+        public async Task<ActionResult<FuelDO>> GetFuelType(string id)
         {
             var fuelType = await _context.FuelTypes.FindAsync(id);
 
@@ -39,7 +45,7 @@ namespace Backend.Controllers
                 return NotFound();
             }
 
-            return fuelType;
+            return new FuelDO { Fuel = fuelType.Type };
         }
     }
 }

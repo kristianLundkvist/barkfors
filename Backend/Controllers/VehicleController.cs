@@ -83,14 +83,85 @@ namespace Backend.Controllers
             vehicleEntity.LicensePlate = vehicle.LicensePlate;
             vehicleEntity.Model = vehicle.Model;
 
-            try
+            if (vehicle.Brand != null)
             {
-                await _context.SaveChangesAsync();
+                if (_context.BrandSet.Where(b => b.BrandName == vehicle.Brand.Brand).Any())
+                {
+                    foreach (var b in _context.BrandSet)
+                    {
+                        if (b.VIN.Exists(v => v.VIN == vehicle.VIN))
+                        {
+                            b.VIN.Remove(b.VIN.Find(v => v.VIN == vehicle.VIN));
+                        }
+                    }
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+                var brand = _context.BrandSet.Find(vehicle.Brand.Brand);
+                brand.VIN.Add(vehicleEntity);
+                _context.BrandSet.Update(brand);
             }
-            catch (DbUpdateConcurrencyException)
+
+            if (vehicle.Fuel != null)
             {
-                throw;
+                if (_context.FuelTypes.Where(f => f.Type == vehicle.Fuel.Fuel).Any())
+                {
+                    foreach (var f in _context.FuelTypes)
+                    {
+                        if (f.VIN.Exists(v => v.VIN == vehicle.VIN))
+                        {
+                            f.VIN.Remove(f.VIN.Find(v => v.VIN == vehicle.VIN));
+                        }
+                    }
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+                var fuel = _context.FuelTypes.Find(vehicle.Fuel.Fuel);
+                fuel.VIN.Add(vehicleEntity);
+                _context.FuelTypes.Update(fuel);
             }
+
+            if (vehicle.Color != null)
+            {
+                if (_context.Colors.Where(c => c.ColorName == vehicle.Color.Color).Any())
+                {
+                    foreach (var c in _context.Colors)
+                    {
+                        if (c.VIN.Exists(v => v.VIN == vehicle.VIN))
+                        {
+                            c.VIN.Remove(c.VIN.Find(v => v.VIN == vehicle.VIN));
+                        }
+                    }
+                }
+                var color = _context.Colors.Find(vehicle.Color.Color);
+                color.VIN.Add(vehicleEntity);
+                _context.Colors.Update(color);
+            }
+
+            foreach (var el in _context.EquipmentLists)
+            {
+                if (el.VIN == vehicle.VIN)
+                {
+                    _context.EquipmentLists.Remove(el);
+                }
+            }
+            foreach (var ve in vehicle.Equipment)
+            {
+                var el = new EquipmentList
+                {
+                    VIN = vehicle.VIN,
+                    EquipmentID = _context.Equipment.Where(e => e.Equipment == ve.VehicleEquipment).Single().ID,
+                };
+                _context.EquipmentLists.Add(el);
+            }
+
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
@@ -98,24 +169,68 @@ namespace Backend.Controllers
         // POST: api/Vehicle
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Vehicle>> PostVehicle(Vehicle vehicle)
+        public async Task<ActionResult<VehicleDO>> PostVehicle(VehicleDO vehicle)
         {
-            _context.Vehicles.Add(vehicle);
-            try
+            if (_context.Vehicles.Find(vehicle.VIN) != null)
             {
-                await _context.SaveChangesAsync();
+                return Conflict();
             }
-            catch (DbUpdateException)
+
+            var entity = new Vehicle
             {
-                if (VehicleExists(vehicle.VIN))
+                VIN = vehicle.VIN,
+                LicensePlate = vehicle.LicensePlate,
+                Model = vehicle.Model,
+            };
+            _context.Vehicles.Add(entity);
+
+            if (vehicle.Brand != null)
+            {
+                if (!_context.BrandSet.Where(b => b.BrandName == vehicle.Brand.Brand).Any())
                 {
-                    return Conflict();
+                    return BadRequest();
                 }
-                else
+                var brand = _context.BrandSet.Find(vehicle.Brand.Brand);
+                brand.VIN.Add(entity);
+                _context.BrandSet.Update(brand);
+            }
+
+            if (vehicle.Fuel != null)
+            {
+                if (!_context.FuelTypes.Where(f => f.Type == vehicle.Fuel.Fuel).Any())
                 {
-                    throw;
+                    return BadRequest();
+                }
+                var fuel = _context.FuelTypes.Find(vehicle.Fuel.Fuel);
+                fuel.VIN.Add(entity);
+                _context.FuelTypes.Update(fuel);
+            }
+
+            if (vehicle.Color != null)
+            {
+                if (!_context.Colors.Where(c => c.ColorName == vehicle.Color.Color).Any())
+                {
+                    return BadRequest();
+                }
+                var color = _context.Colors.Find(vehicle.Color.Color);
+                color.VIN.Add(entity);
+                _context.Colors.Update(color);
+            }
+
+            if (vehicle.Equipment.Count > 0)
+            {
+                foreach (var e in vehicle.Equipment)
+                {
+                    var el = new EquipmentList
+                    {
+                        VIN = vehicle.VIN,
+                        EquipmentID = _context.Equipment.Where(el => el.Equipment == e.VehicleEquipment).Single().ID,
+                    };
+                    _context.EquipmentLists.Add(el);
                 }
             }
+
+            await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetVehicle", new { id = vehicle.VIN }, vehicle);
         }
@@ -131,6 +246,14 @@ namespace Backend.Controllers
             }
 
             _context.Vehicles.Remove(vehicle);
+
+            foreach (var el in _context.EquipmentLists)
+            {
+                if(el.VIN == id){
+                    _context.EquipmentLists.Remove(el);
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             return NoContent();

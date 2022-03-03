@@ -1,4 +1,5 @@
 using Backend.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Data
 {
@@ -8,51 +9,119 @@ namespace Backend.Data
         {
             if (!context.FuelTypes.Any())
             {
-                var fuel = new FuelType[]{
-                    new FuelType{
-                        Type = "Gasoline",
-                    },
-                    new FuelType{
-                        Type = "Diesel",
-                    },
-                    new FuelType{
-                        Type = "Etanol",
-                    }
-                };
+                context.FuelTypes.Add(new FuelType
+                {
+                    Type = "Gasoline",
+                });
+                context.FuelTypes.Add(new FuelType
+                {
+                    Type = "Diesel",
+                });
+                context.FuelTypes.Add(new FuelType
+                {
+                    Type = "Etanol",
+                });
 
-                context.FuelTypes.AddRange(fuel);
                 context.SaveChanges();
             }
 
             if (!context.Equipment.Any())
             {
-                var equipment = new VehicleEquipment[]{
-                    new VehicleEquipment{
-                        Equipment = "GPS",
-                    },
-                    new VehicleEquipment{
-                        Equipment = "Dashcam",
-                    }
-                };
+                context.Equipment.Add(new VehicleEquipment
+                {
+                    Equipment = "GPS",
+                });
+                context.Equipment.Add(new VehicleEquipment
+                {
+                    Equipment = "Dashcam",
+                });
 
-                context.Equipment.AddRange(equipment);
+                context.SaveChanges();
+            }
+
+            if (!context.BrandSet.Any())
+            {
+                context.BrandSet.Add(new Brand
+                {
+                    BrandName = "BMW",
+                });
+                context.BrandSet.Add(new Brand
+                {
+                    BrandName = "VW",
+                });
+                context.BrandSet.Add(new Brand
+                {
+                    BrandName = "Volvo",
+                });
+
+                context.SaveChanges();
+            }
+
+
+            if (!context.Colors.Any())
+            {
+                context.Colors.Add(new CarColor
+                {
+                    ColorName = "Red",
+                });
+                context.Colors.Add(new CarColor
+                {
+                    ColorName = "Green",
+                });
+                context.Colors.Add(new CarColor
+                {
+                    ColorName = "Yellow",
+                });
+
                 context.SaveChanges();
             }
 
             if (!context.Vehicles.Any())
             {
-                var vehicles = new Vehicle[]{
-                    new Vehicle
-                    {
-                        VIN = "Test",
-                        LicensePlate = "Test",
-                        Model = "Test",
-                        Brand = "Test",
-
-                    }
+                var temp = new Vehicle
+                {
+                    VIN = "012345",
+                    LicensePlate = "ABC123",
+                    Model = "Truck",
                 };
+                context.Vehicles.Add(temp);
+                context.SaveChanges();
 
-                context.Vehicles.AddRange(vehicles);
+                var brand = context.BrandSet.First(b => b.BrandName == "VW");
+                context.Entry(brand).State = EntityState.Modified;
+                brand.VIN.Add(temp);
+
+                var fuel = context.FuelTypes.First(f => f.Type == "Gasoline");
+                context.Entry(fuel).State = EntityState.Modified;
+                fuel.VIN.Add(temp);
+
+                var color = context.Colors.First(c => c.ColorName == "Green");
+                context.Entry(color).State = EntityState.Modified;
+                color.VIN.Add(temp);
+
+                context.SaveChanges();
+
+                temp = new Vehicle
+                {
+                    VIN = "qwerty",
+                    LicensePlate = "AAA111",
+                    Model = "Car",
+                };
+                context.Vehicles.Add(temp);
+                context.SaveChanges();
+
+                brand = context.BrandSet.First(b => b.BrandName == "VW");
+                context.Entry(brand).State = EntityState.Modified;
+                brand.VIN.Add(temp);
+
+                fuel = context.FuelTypes.First(f => f.Type == "Gasoline");
+                context.Entry(fuel).State = EntityState.Modified;
+                fuel.VIN.Add(temp);
+
+                color = context.Colors.First(c => c.ColorName == "Red");
+                context.Entry(color).State = EntityState.Modified;
+                color.VIN.Add(temp);
+
                 context.SaveChanges();
             }
         }

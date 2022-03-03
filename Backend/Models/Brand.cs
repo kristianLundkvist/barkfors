@@ -1,9 +1,8 @@
 namespace Backend.Models
 {
-    public class VehicleEquipment
+    public class Brand
     {
-        public string Equipment { get; set; } = null!;
-
+        public string BrandName { get; set; } = null!;
         public List<Vehicle> VIN { get; set; } = new List<Vehicle>();
     }
 }

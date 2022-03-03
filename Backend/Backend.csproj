@@ -25,4 +25,8 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SharedDO\SharedDO.csproj" />
+  </ItemGroup>
+
 </Project>

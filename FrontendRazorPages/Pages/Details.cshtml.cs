@@ -14,7 +14,7 @@ namespace FrontendRazorPages.Pages
         {
             _cache = cache;
         }
-        public async Task<IActionResult> OnGet()
+        public async Task<IActionResult> OnGet(string VIN)
         {
 
             _cache.Remove("List Vehicle DO");

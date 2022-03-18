@@ -10,6 +10,29 @@
     <title>Vehicle Details</title>
 </head>
 <body>
-    
+    @if (Model.Vehicle != null)
+    {
+        <p>@Model.Vehicle.VIN</p>
+        @if (Model.Vehicle.LicensePlate != null)
+        {
+            <p>@Model.Vehicle.LicensePlate</p>
+        }
+        @if (Model.Vehicle.Model != null)
+        {
+            <p>@Model.Vehicle.Model</p>
+        }
+        @if (Model.Vehicle.Brand != null)
+        {
+            <p>@Model.Vehicle.Brand.Brand</p>
+        }
+        @if (Model.Vehicle.Fuel != null)
+        {
+            <p>@Model.Vehicle.Fuel.Fuel</p>
+        }
+        @if (Model.Vehicle.Color != null)
+        {
+            <p>@Model.Vehicle.Color.Color</p>
+        }
+    }
 </body>
 </html>
